@@ -12,8 +12,8 @@ def Nettoie(texte):
     return re.sub(r'[\/:*?"<>|]', '_', texte)
 
 backslash = "\\"
-URLS = ['https://www.youtube.com/watch?v=bTx9bi-Gwts']
-#URLS = [input("Lien youtube de la musique/playlist :\n\n")]
+#URLS = ['https://www.youtube.com/watch?v=bTx9bi-Gwts']
+URLS = [input("Lien youtube de la musique/playlist :\n\n")]
 
 
 ydl_opts = {
