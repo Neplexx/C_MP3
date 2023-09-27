@@ -5,7 +5,7 @@
 #Note : entrer dans la variable "chemin" le chemin d'accès vers l'endroit où vous voulez que vos musiques soient téléchargées        
 
 import yt_dlp , re , requests , os
-from mutagen.id3 import ID3, TPE1, TALB , APIC
+from mutagen.id3 import ID3, TPE1, TALB ,TIT2, APIC
 chemin = r"C:\Users\detal\Desktop\C_MP3"
 
 def Nettoie(texte):
@@ -59,8 +59,10 @@ with open(image_mp3, 'rb') as image_file:
     image_data = image_file.read()
 
 audio = ID3(fichier_mp3)
+audio.add(TIT2(encoding=3, text=musique_nom))
 audio.add(TPE1(encoding=3, text=musique_auteur))
 audio.add(TALB(encoding=3, text=musique_album))
+
 apic = APIC(encoding=3, mime='image/jpeg', type=3, desc=u'Cover', data=image_data)
 audio.add(apic)
 audio.save()
