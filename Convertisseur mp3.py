@@ -1,12 +1,10 @@
-import yt_dlp, re, requests, os, sys
+import yt_dlp, re, requests, os, sys, threading
 from mutagen.id3 import ID3, TPE1, TALB, TIT2, APIC
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QFileDialog, QLineEdit
 
 backslash = "\\"
-chemin = r"C:\Users\detal\Desktop\C_MP3"
-
 
 class PrincipalWindow(QWidget):
     def __init__(self):
@@ -53,25 +51,29 @@ class PrincipalWindow(QWidget):
         download_button_font = QFont("Arial", 8)
         download_button.setFont(download_button_font)
         download_button.move(890, 600)
-        download_button.clicked.connect(self.ConvertisseurMP3)
+        download_button.clicked.connect(self.start_download)
 
-    def ConvertisseurMP3(self):
+    def start_download(self):
+        URLS = self.URLS.text()
         chemin = QFileDialog.getExistingDirectory(self, "Sélectionner le dossier de sauvegarde")
+        
+        #permet un téléchargement séparé de l'interface empechant un freeze de l'interface
+        download_thread = threading.Thread(target=self.ConvertisseurMP3, args=(URLS, chemin))
+        download_thread.start()
 
-        URLS = self.URLS
-
+    def ConvertisseurMP3(self, URLS, chemin):
         ydl_opts = {
             'outtmpl': chemin + backslash + r"%(title)s.%(ext)s",
             'format': 'bestaudio/best',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
-            },
-            ],
+            }],
         }
+
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info_dict = ydl.extract_info(URLS.text(), download=False)
-            ydl.download([URLS.text()])
+            info_dict = ydl.extract_info(URLS, download=False)
+            ydl.download([URLS])
             musique_nom = info_dict.get('title', 'inconnu')
             musique_auteur = info_dict.get('uploader', 'inconnu')
 
@@ -80,8 +82,7 @@ class PrincipalWindow(QWidget):
         else:
             musique_album = musique_nom
 
-        # partie recherche et téléchargement de l'image
-        response = requests.get(URLS.text())
+        response = requests.get(URLS)
         if response.status_code == 200:
             thumbnail_url = response.text.split('<meta property="og:image" content="')[1].split('"')[0]
             response_thumbnail = requests.get(thumbnail_url)
@@ -89,7 +90,6 @@ class PrincipalWindow(QWidget):
                 with open(chemin + backslash + self.Nettoie(info_dict['title']) + ".jpg", "wb") as thumbnail_file:
                     thumbnail_file.write(response_thumbnail.content)
 
-        # partie mutagen permettant de modifier les métadonnées du fichier mp3 pour inclure les valeurs 'album' et 'artiste' (au cas où j'oublie)
         fichier_mp3 = chemin + backslash + self.Nettoie(info_dict['title']) + '.mp3'
         image_mp3 = chemin + backslash + self.Nettoie(info_dict['title']) + '.jpg'
 
@@ -105,7 +105,6 @@ class PrincipalWindow(QWidget):
         audio.add(apic)
         audio.save()
 
-        # partie supprimer les restes
         os.remove(chemin + backslash + self.Nettoie(info_dict['title']) + '.jpg')
 
     def Nettoie(self, texte):
@@ -116,7 +115,6 @@ def main():
     application = QApplication(sys.argv)
     fenetre = PrincipalWindow()
     sys.exit(application.exec_())
-
 
 if __name__ == '__main__':
     main()
