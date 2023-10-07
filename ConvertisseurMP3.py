@@ -4,7 +4,7 @@ from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt , QTimer
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QFileDialog, QLineEdit, QFrame , QMenuBar, QProgressBar
 
-#From Neplexx's Inc 
+#From Neplexx's Inc : https://uploadnow.io/f/ScqJnvK 
 #pyinstaller --noconsole ConvertisseurMP3.py
 #auto-py-to-exe
 #dédicace à ma variable backslash qu'elle repose en paix
